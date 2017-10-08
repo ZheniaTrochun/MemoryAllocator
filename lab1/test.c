@@ -1,41 +1,51 @@
 // #include "allocator.h"
 // #include "test.h"
 
+int round4(int num) {
+  num += ((num % 4) == 0) ? 0 : (4 - (num % 4));
+
+  return num;
+}
+
+
 void test() {
   myAllocInit();
 
-  // printf("Size of controlBlock: %lu\n", sizeof(struct controlBlock));
+  int size = 41;
+  int size1 = 2;
+  int size2 = 40;
+  int size3 = 1000;
+  int size4 = 45;
+  int size5 = 80;
 
-  void *ptr = myMalloc(41);
-  void *ptr1 = myMalloc(2);
-  void *ptr2 = myMalloc(40);
-  void *ptr3 = myMalloc(1000);
+  void *ptr = myMalloc(size);
+  void *ptr1 = myMalloc(size1);
+  void *ptr2 = myMalloc(size2);
+  void *ptr3 = myMalloc(size3);
 
   printf("Allocated memory address: %p\n", ptr);
-  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr), 44);
+  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr), round4(size));
   printf("Allocated memory address: %p\n", ptr1);
-  printf("Size of memory: %lu\texpested: %d\n", sizeOfMem(ptr1), 4);
+  printf("Size of memory: %lu\texpested: %d\n", sizeOfMem(ptr1), round4(size1));
   printf("Allocated memory address: %p\n", ptr2);
-  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr2), 40);
+  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr2), round4(size2));
   printf("Allocated memory address: %p\n", ptr3);
-  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr3), 1000);
+  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr3), round4(size3));
 
-  void *ptr4 = myRealloc(ptr, 45);
-  printf("Reallocated memory address: %p\n", ptr4);
-  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr4), 48);
+  void *ptr4 = myRealloc(ptr, size4);
+  printf("Reallocated memory address: %p\texpected: %p\n", ptr4, ptr3 + 1008);
+  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr4), round4(size4));
 
   myFree(ptr);
   printf("Free memory: %p\n", ptr);
-  // myFree(ptr1);
-  // printf("Free memory: %p\n", ptr1);
+
   myFree(ptr2);
   printf("Free memory: %p\n", ptr2);
 
-  ptr1 = myRealloc(ptr1, 80);
-  printf("Reallocated memory address: %p\n", ptr1);
-  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr1), 80);
+  ptr1 = myRealloc(ptr1, size5);
+  printf("Reallocated memory address: %p\texpected: %p\n", ptr1, ptr);
+  printf("Size of memory: %lu\texpected: %d\n", sizeOfMem(ptr1), round4(size5));
 
-  // printf("Memory start %p\n", memoryStart);
   ptr = myMalloc(32);
   printf("Allocated memory: %p\n", ptr);
   printf("Size of memory: %lu\n", sizeOfMem(ptr));
@@ -43,8 +53,6 @@ void test() {
   ptr = myMalloc(2);
   printf("Allocated memory: %p\n", ptr);
   printf("Size of memory: %lu\n", sizeOfMem(ptr));
-
-  // printf("123\n");
 }
 
 void main() {

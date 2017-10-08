@@ -161,8 +161,10 @@ void *connectBlocks(void *first, void *second) {
 
 
 void *myRealloc(void *firstbyte, int newSize) {
-  struct controlBlock *control = firstbyte - sizeof(struct controlBlock);
 
+  newSize += (newSize % 4 == 0) ? 0 : (4 - (newSize % 4));
+
+  struct controlBlock *control = firstbyte - sizeof(struct controlBlock);
   newSize += sizeof(struct controlBlock);
 
   if (newSize == control->size)
@@ -173,59 +175,48 @@ void *myRealloc(void *firstbyte, int newSize) {
     return firstbyte;
   }
 
-  struct controlBlock *prevControl = findPrevBlock(control);
-  struct controlBlock *nextControl = control + control->size;
 
-  if (prevControl) {
-    printf("prev %p\n", prevControl);
-    printf("prev available %p\n", prevControl->isAvailable);
-    printf("prev size %p\n", prevControl->size);
-  }
+  void *prevPtr = findPrevBlock(control);
+  struct controlBlock *prevControl = prevPtr;
+  void *ptrTmp = firstbyte - sizeof(struct controlBlock) + control->size;
+  struct controlBlock *nextControl = ptrTmp;
 
-  printf("control %p\n", control);
-  printf("control available %p\n", control->isAvailable);
-  printf("control size %p\n", control->size);
-
-  // if ()
-  printf("next %p\n", nextControl);
-  printf("next available %p\n", nextControl->isAvailable);
-  printf("next size %p\n", nextControl->size);
 
   if ((nextControl < lastAdress) && nextControl->isAvailable && ((prevControl->size + control->size) >= newSize)) {
     control->size += nextControl->size;
 
     if (control->size > newSize) {
-      divBlock(prevControl, newSize);
+      divBlock(prevPtr, newSize);
     }
 
-    return control + sizeof(struct controlBlock);
+    return firstbyte;
   }
 
 
   if (prevControl && prevControl->isAvailable && ((prevControl->size + control->size) >= newSize)) {
-    copyData(firstbyte, prevControl + sizeof(struct controlBlock), control->size);
+    copyData(firstbyte, prevPtr + sizeof(struct controlBlock), control->size);
 
     prevControl->isAvailable = 0;
     prevControl->size += control->size;
 
     if (prevControl->size > newSize) {
-      divBlock(prevControl, newSize);
+      divBlock(prevPtr, newSize);
     }
 
-    return prevControl + sizeof(struct controlBlock);
+    return prevPtr + sizeof(struct controlBlock);
   }
 
   if ((nextControl < lastAdress) && nextControl->isAvailable && prevControl &&
       prevControl->isAvailable && ((prevControl->size + control->size + nextControl->size) >= newSize)) {
 
-    copyData(firstbyte, prevControl + sizeof(struct controlBlock), control->size);
+    copyData(firstbyte, prevPtr + sizeof(struct controlBlock), control->size);
 
     prevControl->size += control->size;
     prevControl->size += nextControl->size;
 
-    divBlock(prevControl, newSize);
+    divBlock(prevPtr, newSize);
 
-    return prevControl + sizeof(struct controlBlock);
+    return prevPtr + sizeof(struct controlBlock);
   }
 
   void *newLocation = myMalloc(newSize - sizeof(struct controlBlock));
